@@ -9,34 +9,30 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
 const AttendanceTableCard = ({ attendance }) => {
-  // Calculate raw total deduction
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const rawTotalDeduction = attendance.reduce((sum, record) => {
     const deduction = record["DAY WISE DEDUCTION"];
-    // Only add if it's a valid number and not "N/A" or "➖"
     if (deduction && !isNaN(parseFloat(deduction))) {
       return sum + parseFloat(deduction);
     }
     return sum;
   }, 0);
 
-  // Apply rounding logic
-  let roundedTotalDeduction;
-  const decimalPart = rawTotalDeduction % 1; // Get the decimal part (e.g., 10.75 -> 0.75)
-
-  // This handles positive and negative numbers correctly for the decimal part
-  // Ensure decimalPart is always positive for the rounding rule
+  const decimalPart = rawTotalDeduction % 1;
   const absoluteDecimalPart = Math.abs(decimalPart);
 
-  if (absoluteDecimalPart >= 0 && absoluteDecimalPart <= 0.5) {
-    roundedTotalDeduction = Math.floor(rawTotalDeduction); // Round down
-  } else {
-    roundedTotalDeduction = Math.ceil(rawTotalDeduction); // Round up
-  }
+  let roundedTotalDeduction =
+    absoluteDecimalPart <= 0.5
+      ? Math.floor(rawTotalDeduction)
+      : Math.ceil(rawTotalDeduction);
 
-  // Calculate the round-off difference
   const roundOffValue = roundedTotalDeduction - rawTotalDeduction;
 
   return (
@@ -52,14 +48,14 @@ const AttendanceTableCard = ({ attendance }) => {
       }}
     >
       <CardContent>
-        {/* Styled Header inside the Card */}
+        {/* Header */}
         <Box
           sx={{
             bgcolor: "#D0B8A8",
             px: 2,
             py: 1,
             borderRadius: 1,
-            width: "94%",
+            width: "auto",
             mb: 3,
             textAlign: "center",
           }}
@@ -73,7 +69,7 @@ const AttendanceTableCard = ({ attendance }) => {
           </Typography>
         </Box>
 
-        {/* --- Color-coding Note --- */}
+        {/* Color Code Note */}
         <Box
           sx={{
             mb: 2,
@@ -96,7 +92,7 @@ const AttendanceTableCard = ({ attendance }) => {
                   borderRadius: "50%",
                   mr: 1,
                 }}
-              ></Box>
+              />
               <Typography variant="body2">Late</Typography>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -108,7 +104,7 @@ const AttendanceTableCard = ({ attendance }) => {
                   borderRadius: "50%",
                   mr: 1,
                 }}
-              ></Box>
+              />
               <Typography variant="body2">Half Day</Typography>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -120,183 +116,183 @@ const AttendanceTableCard = ({ attendance }) => {
                   borderRadius: "50%",
                   mr: 1,
                 }}
-              ></Box>
+              />
               <Typography variant="body2">Absent</Typography>
             </Box>
           </Box>
         </Box>
-        {/* --- End Color-coding Note --- */}
 
-        <Table>
-          <TableHead>
-            <TableRow>
-              {[
-                "Date",
-                "In Time",
-                "Out Time",
-                "Status",
-                "Day Wise Deduction",
-              ].map((head) => (
+        {/* Scrollable Table for Mobile */}
+        <Box sx={{ overflowX: isMobile ? "auto" : "visible" }}>
+          <Table sx={{ minWidth: 600 }}>
+            <TableHead>
+              <TableRow>
+                {[
+                  "Date",
+                  "In Time",
+                  "Out Time",
+                  "Status",
+                  "Day Wise Deduction",
+                ].map((head) => (
+                  <TableCell
+                    key={head}
+                    align="center"
+                    sx={{
+                      fontWeight: "bold",
+                      fontSize: "15px",
+                      whiteSpace: "nowrap",
+                      padding: "12px 8px",
+                    }}
+                  >
+                    {head}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {attendance.map((record, i) => {
+                let bgColor = i % 2 === 0 ? "#f9f9f9" : "#ffffff";
+                let isHighlighted = false;
+
+                if (record.Status?.toLowerCase() === "late") {
+                  bgColor = "#a9cc9c";
+                  isHighlighted = true;
+                }
+                if (record.Status?.toLowerCase() === "half day") {
+                  bgColor = "#ea9999";
+                  isHighlighted = true;
+                }
+                if (record.Status?.toLowerCase() === "absent") {
+                  bgColor = "#b4a7d6";
+                  isHighlighted = true;
+                }
+
+                return (
+                  <TableRow
+                    key={i}
+                    sx={{
+                      "&:last-child td, &:last-child th": { border: 0 },
+                      backgroundColor: bgColor,
+                      transition: "all 0.3s ease",
+                      cursor: "pointer",
+                      "&:hover": {
+                        backgroundColor: isHighlighted ? bgColor : "#e0e0e0",
+                        transform: "scale(1.02)",
+                        boxShadow: 2,
+                      },
+                    }}
+                  >
+                    <TableCell
+                      align="center"
+                      sx={{ fontSize: "14px", padding: "14px 8px" }}
+                    >
+                      {record.Date}
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ fontSize: "14px", padding: "14px 8px" }}
+                    >
+                      {record["In Time"]}
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ fontSize: "14px", padding: "14px 8px" }}
+                    >
+                      {record["Out Time"]}
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ fontSize: "14px", padding: "14px 8px" }}
+                    >
+                      {record.Status}
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ fontSize: "14px", padding: "14px 8px" }}
+                    >
+                      {record["DAY WISE DEDUCTION"] || "➖"}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+
+              {/* Total, Round off, Final */}
+              <TableRow>
                 <TableCell
-                  key={head}
+                  colSpan={4}
+                  align="right"
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "14px",
+                    borderTop: "2px solid #ccc",
+                  }}
+                >
+                  Total :
+                </TableCell>
+                <TableCell
                   align="center"
                   sx={{
                     fontWeight: "bold",
-                    fontSize: "15px",
-                    whiteSpace: "nowrap",
-                    padding: "12px 8px",
+                    fontSize: "14px",
+                    borderTop: "2px solid #ccc",
                   }}
                 >
-                  {head}
+                  {rawTotalDeduction.toFixed(2)}
                 </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {attendance.map((record, i) => {
-              let bgColor = i % 2 === 0 ? "#f9f9f9" : "#ffffff"; // Default zebra striping
-              let isHighlighted = false;
-
-              // Conditional row color based on status
-              if (record.Status?.toLowerCase() === "late") {
-                bgColor = "#a9cc9c";
-                isHighlighted = true;
-              }
-              if (record.Status?.toLowerCase() === "half day") {
-                bgColor = "#ea9999";
-                isHighlighted = true;
-              }
-              if (record.Status?.toLowerCase() === "absent") {
-                bgColor = "#b4a7d6";
-                isHighlighted = true;
-              }
-
-              return (
-                <TableRow
-                  key={i}
+              </TableRow>
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  align="right"
+                  sx={{ fontWeight: "bold", fontSize: "14px" }}
+                >
+                  Round off :
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{ fontWeight: "bold", fontSize: "14px" }}
+                >
+                  {roundOffValue.toFixed(2)}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  align="right"
                   sx={{
-                    "&:last-child td, &:last-child th": { border: 0 },
-                    backgroundColor: bgColor,
-                    transition: "all 0.3s ease",
-                    cursor: "pointer",
-                    "&:hover": {
-                      backgroundColor: isHighlighted ? bgColor : "#e0e0e0", // Grey only if not highlighted
-                      transform: "scale(1.02)",
-                      boxShadow: 2,
-                    },
+                    fontWeight: "bold",
+                    fontSize: "14px",
+                    borderBottom: "2px solid #ccc",
                   }}
                 >
-                  <TableCell
-                    align="center"
-                    sx={{ fontSize: "14px", padding: "14px 8px" }}
-                  >
-                    {record.Date}
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{ fontSize: "14px", padding: "14px 8px" }}
-                  >
-                    {record["In Time"]}
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{ fontSize: "14px", padding: "14px 8px" }}
-                  >
-                    {record["Out Time"]}
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{ fontSize: "14px", padding: "14px 8px" }}
-                  >
-                    {record.Status}
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{ fontSize: "14px", padding: "14px 8px" }}
-                  >
-                    {record["DAY WISE DEDUCTION"] || "➖"}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-            {/* Total Row */}
-            <TableRow>
-              <TableCell
-                colSpan={4}
-                align="right"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "14px",
-                  padding: "14px 8px",
-                  borderTop: "2px solid #ccc",
-                }}
-              >
-                Total :
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "14px",
-                  padding: "14px 8px",
-                  borderTop: "2px solid #ccc",
-                }}
-              >
-                {rawTotalDeduction.toFixed(2)}
-              </TableCell>
-            </TableRow>
-            {/* Round off Row */}
-            <TableRow>
-              <TableCell
-                colSpan={4}
-                align="right"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "14px",
-                  padding: "14px 8px",
-                }}
-              >
-                Round off :
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "14px",
-                  padding: "14px 8px",
-                }}
-              >
-                {roundOffValue.toFixed(2)}
-              </TableCell>
-            </TableRow>
-            {/* Total Deduction Row (Rounded) */}
-            <TableRow>
-              <TableCell
-                colSpan={4}
-                align="right"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "14px",
-                  padding: "14px 8px",
-                  borderBottom: "2px solid #ccc", // Bottom border for final total
-                }}
-              >
-                Total Deduction :
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "14px",
-                  padding: "14px 8px",
-                  borderBottom: "2px solid #ccc", // Bottom border for final total
-                }}
-              >
-                {roundedTotalDeduction.toFixed(0)}{" "}
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+                  Total Deduction :
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "14px",
+                    borderBottom: "2px solid #ccc",
+                  }}
+                >
+                  {roundedTotalDeduction.toFixed(0)}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </Box>
+
+        {/* Scroll hint for mobile */}
+        {isMobile && (
+          <Typography
+            variant="caption"
+            display="block"
+            textAlign="center"
+            sx={{ mt: 2, fontStyle: "italic", color: "#666" }}
+          >
+            ↔️ Swipe left/right to view full table
+          </Typography>
+        )}
       </CardContent>
     </Card>
   );
