@@ -8,9 +8,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  TextField,
-  Chip,
+  useMediaQuery,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 
 import EmployeeSelector from "../components/EmployeeSelector";
 import SideMenu from "../components/SideMenu";
@@ -18,117 +18,7 @@ import EmployeeDetails from "../components/EmployeeDetails";
 import AttendanceTableCard from "../components/AttendanceTableCard";
 import PayrollSummary from "../components/PayrollSummary";
 import PayrollDashboard from "../components/PayrollDashboard";
-
-const PayrollApproval = ({ payroll }) => {
-  const [approvalStatus, setApprovalStatus] = useState("");
-  const [reason, setReason] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [message, setMessage] = useState("");
-
-  const handleSubmit = async () => {
-    if (!approvalStatus) {
-      alert("Please select approval status.");
-      return;
-    }
-
-    if (approvalStatus === "Rejected" && reason.trim() === "") {
-      alert("Please provide a reason for rejection.");
-      return;
-    }
-
-    const payload = {
-      employeeId: payroll["Employee ID"],
-      employeeName: payroll["Full Name"] || "",
-      employeeEmail: payroll["Email"] || "",
-      month: new Date().toLocaleString("default", {
-        month: "long",
-        year: "numeric",
-      }),
-      status: approvalStatus,
-      reason: approvalStatus === "Rejected" ? reason : "",
-    };
-
-    try {
-      const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbznaZIQ-JCtZOUoG_JIJl2tEknFi0A-BVEe0KcEGEqZevp1XMGfbN3BseESalHs9QQ9vA/exec",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      const text = await response.text();
-      const result = JSON.parse(text);
-
-      if (result.success) {
-        alert(`✅ ${approvalStatus} submitted successfully!`);
-        setApprovalStatus("");
-        setReason("");
-        setSubmitted(true);
-      } else {
-        alert(result.message || "⚠️ Submission failed.");
-      }
-    } catch (error) {
-      console.error("❌ Error during submission:", error);
-      alert("❌ Something went wrong. Check console for details.");
-    }
-  };
-
-  return (
-    <Box mt={4} maxWidth="80%">
-      {submitted && (
-        <Chip
-          label={`Submitted: ${approvalStatus}`}
-          color={approvalStatus === "Approved" ? "success" : "error"}
-          variant="outlined"
-          sx={{ mb: 2 }}
-        />
-      )}
-      <FormControl fullWidth sx={{ mb: 2 }}>
-        <InputLabel>Approval Status</InputLabel>
-        <Select
-          value={approvalStatus}
-          label="Approval Status"
-          onChange={(e) => setApprovalStatus(e.target.value)}
-          disabled={submitted}
-        >
-          <MenuItem value="Approved">Approved</MenuItem>
-          <MenuItem value="Rejected">Rejected</MenuItem>
-        </Select>
-      </FormControl>
-
-      {approvalStatus === "Rejected" && (
-        <TextField
-          label="Reason for Rejection"
-          variant="outlined"
-          fullWidth
-          multiline
-          minRows={2}
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          sx={{ mb: 2 }}
-          disabled={submitted}
-        />
-      )}
-
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleSubmit}
-        disabled={submitted}
-      >
-        Submit
-      </Button>
-
-      {message && (
-        <Typography mt={2} fontWeight="bold" color="text.secondary">
-          {message}
-        </Typography>
-      )}
-    </Box>
-  );
-};
+import PayrollApproval from "../components/PayrollApproval";
 
 const Dashboard = ({ onLogout }) => {
   const [employees, setEmployees] = useState([]);
@@ -139,6 +29,9 @@ const Dashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState("details");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -158,7 +51,6 @@ const Dashboard = ({ onLogout }) => {
         setEmployees(empRes.data);
         setAttendanceData(attRes.data);
         setPayrollData(payRes.data);
-
         setLoading(false);
       } catch (err) {
         console.error("Fetch error:", err);
@@ -173,7 +65,6 @@ const Dashboard = ({ onLogout }) => {
   const companyOptions = [
     ...new Set(employees.map((emp) => emp["Company Name"])),
   ].filter(Boolean);
-
   const filteredEmployees = selectedCompany
     ? employees.filter((emp) => emp["Company Name"] === selectedCompany)
     : [];
@@ -201,74 +92,60 @@ const Dashboard = ({ onLogout }) => {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#F8EDE3", width: "100%" }}>
+      {/* HEADER */}
       <Box
         sx={{
           bgcolor: "#C5705D",
           color: "white",
-          px: { xs: 2, md: 4 },
-          py: { xs: 1, md: 2 },
+          px: 2,
+          py: 2,
           display: "flex",
+          flexDirection: isMobile ? "column" : "row",
           justifyContent: "space-between",
           alignItems: "center",
-          flexWrap: "wrap",
-          gap: 2,
-          minHeight: "120px",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
+        <Box display="flex" alignItems="center" gap={2}>
           <img
             src="https://i.postimg.cc/zfxrdDkJ/logo-1.png"
             alt="Company Logo"
-            style={{
-              height: "100px",
-              marginRight: "20px",
-              borderRadius: "0px",
-            }}
+            style={{ height: 60 }}
           />
           <Typography
-            variant="h4"
-            sx={{
-              fontFamily: "'Merriweather', serif",
-              fontWeight: 800,
-              fontSize: { xs: "24px", md: "48px" },
-              textAlign: "center",
-            }}
+            variant={isMobile ? "h6" : "h4"}
+            fontFamily="'Merriweather', serif"
+            fontWeight={800}
+            textAlign="center"
           >
             Payroll Employees
           </Typography>
         </Box>
-
         <Button
           variant="outlined"
           color="inherit"
           onClick={onLogout}
-          sx={{ fontSize: { xs: "12px", md: "16px" }, whiteSpace: "nowrap" }}
+          sx={{ mt: isMobile ? 1 : 0 }}
         >
           Logout
         </Button>
       </Box>
 
+      {/* SUB HEADER */}
       <Box
         sx={{
           bgcolor: "#D0B8A8",
-          px: { xs: 2, md: 4 },
-          py: { xs: 2, md: 3 },
+          px: 2,
+          py: 3,
           display: "flex",
-          alignItems: "center",
-          flexWrap: "wrap",
+          flexDirection: isMobile ? "column" : "row",
           gap: 2,
+          alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <FormControl
-          variant="outlined"
-          sx={{ minWidth: { xs: "100%", sm: 250 } }}
-          required
-        >
-          <InputLabel id="company-select-label">Select Company</InputLabel>
+        <FormControl fullWidth sx={{ maxWidth: 300 }}>
+          <InputLabel>Select Company</InputLabel>
           <Select
-            labelId="company-select-label"
-            id="company-select"
             value={selectedCompany}
             onChange={(e) => {
               setSelectedCompany(e.target.value);
@@ -292,27 +169,30 @@ const Dashboard = ({ onLogout }) => {
         />
       </Box>
 
+      {/* MAIN CONTENT */}
       <Box
         sx={{
-          px: { xs: 2, md: 4 },
-          pt: { xs: 2, md: 4 },
-          pb: 8,
+          px: 2,
+          pt: 3,
+          pb: 6,
           display: "flex",
-          justifyContent: "center",
+          flexDirection: isMobile ? "column" : "row",
+          gap: 3,
         }}
       >
         {selectedCompany && selectedEmployeeId ? (
           <Box
             width="100%"
-            maxWidth="1200px"
             display="flex"
-            flexWrap="nowrap"
-            overflowX="auto"
+            flexDirection={isMobile ? "column" : "row"}
+            gap={3}
           >
-            <SideMenu activeTab={activeTab} onTabChange={setActiveTab} />
-            <Box
-              sx={{ flexGrow: 1, ml: { xs: 0, md: 3 }, mt: { xs: 2, md: 0 } }}
-            >
+            <SideMenu
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              vertical={!isMobile}
+            />
+            <Box flexGrow={1}>
               {activeTab === "details" && (
                 <EmployeeDetails
                   employee={selectedEmployee}
@@ -325,15 +205,15 @@ const Dashboard = ({ onLogout }) => {
                 ) : (
                   <Typography>No attendance records found.</Typography>
                 ))}
-              {activeTab === "payroll" &&
-                (employeePayroll ? (
-                  <>
-                    <PayrollSummary payroll={employeePayroll} />
-                    <PayrollApproval payroll={employeePayroll} />
-                  </>
-                ) : (
-                  <Typography>No payroll data available.</Typography>
-                ))}
+              {activeTab === "payroll" && employeePayroll && (
+                <>
+                  <PayrollSummary payroll={employeePayroll} />
+                  <PayrollApproval
+                    payroll={employeePayroll}
+                    employee={selectedEmployee}
+                  />
+                </>
+              )}
               {activeTab === "dashboard" &&
                 (employeePayroll ? (
                   <PayrollDashboard payroll={employeePayroll} />
@@ -343,7 +223,9 @@ const Dashboard = ({ onLogout }) => {
             </Box>
           </Box>
         ) : (
-          <Typography sx={{ mt: 4, fontSize: 18, color: "#999" }}>
+          <Typography
+            sx={{ mt: 4, fontSize: 18, color: "#999", textAlign: "center" }}
+          >
             Please select both Company and Employee to view the dashboard.
           </Typography>
         )}
