@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import {
   Box,
+  Button,
+  Typography,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
   TextField,
-  Button,
-  Typography,
   Chip,
 } from "@mui/material";
 
-const PayrollApproval = ({ payroll }) => {
+const PayrollApproval = ({ payroll, employee }) => {
   const [approvalStatus, setApprovalStatus] = useState("");
   const [reason, setReason] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -29,42 +29,40 @@ const PayrollApproval = ({ payroll }) => {
     }
 
     const payload = {
-      employeeId: payroll["Employee ID"],
-      employeeName: payroll["Full Name"] || "",
-      employeeEmail: payroll["Email"] || "",
-      month: new Date().toLocaleString("default", {
-        month: "long",
-        year: "numeric",
-      }),
+      employeeId: employee?.["Employee ID"] || "N/A",
+      employeeName: employee?.Name || "N/A",
       status: approvalStatus,
       reason: approvalStatus === "Rejected" ? reason : "",
+      // month: removed as per your request
     };
 
-    console.log("🚀 Sending Payload:", payload);
+    console.log("🟢 Submitting payload:", payload);
 
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbznaZIQ-JCtZOUoG_JIJl2tEknFi0A-BVEe0KcEGEqZevp1XMGfbN3BseESalHs9QQ9vA/exec",
+        "https://script.google.com/macros/s/AKfycbyZrRHvoGJ-xTIEBlgt4C-JHDYJVQJRNCsfZ4UC5h3BkTwhHTbb25ixoTUw_sGJrmXr2Q/exec",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "text/plain",
+          },
           body: JSON.stringify(payload),
         }
       );
 
-      const text = await response.text();
-      console.log("📩 Raw response:", text);
-      const result = JSON.parse(text);
+      const result = await response.json();
 
       if (result.success) {
-        setMessage(`✅ ${approvalStatus} submitted successfully!`);
+        alert(`✅ ${approvalStatus} submitted successfully!`);
+        setApprovalStatus("");
+        setReason("");
         setSubmitted(true);
       } else {
         alert(result.message || "⚠️ Submission failed.");
       }
     } catch (error) {
-      console.error("❌ Submission error:", error);
-      alert("❌ Something went wrong. Check console.");
+      console.error("❌ Error during submission:", error);
+      alert("❌ Something went wrong. Check console for details.");
     }
   };
 
@@ -72,27 +70,11 @@ const PayrollApproval = ({ payroll }) => {
     <Box
       mt={4}
       sx={{
-        bgcolor: "#FFF",
-        p: 3,
-        borderRadius: 2,
-        boxShadow: 2,
-        maxWidth: "80%",
-        mx: "auto",
+        width: { xs: "100%", sm: "90%", md: "60%" },
+        mx: "auto", // center horizontally
+        px: { xs: 1, sm: 2 }, // horizontal padding for mobile
       }}
     >
-      <Typography variant="h6" mb={2}>
-        Payroll Approval
-      </Typography>
-
-      {submitted && (
-        <Chip
-          label={`Submitted: ${approvalStatus}`}
-          color={approvalStatus === "Approved" ? "success" : "error"}
-          variant="outlined"
-          sx={{ mb: 2 }}
-        />
-      )}
-
       <FormControl fullWidth sx={{ mb: 2 }}>
         <InputLabel>Approval Status</InputLabel>
         <Select
