@@ -9,9 +9,14 @@ import {
   TableHead,
   TableRow,
   Box,
+  useMediaQuery,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 
 const PayrollSummary = ({ payroll }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   if (!payroll) {
     return <Typography>No payroll data available.</Typography>;
   }
@@ -35,35 +40,34 @@ const PayrollSummary = ({ payroll }) => {
         mb: 4,
         borderRadius: 2,
         boxShadow: "none",
-        maxWidth: "80%",
-        ml: "left",
+        width: isMobile ? "100%" : "80%",
+        mx: "auto",
         "&:hover": { boxShadow: 3 },
       }}
     >
       <CardContent>
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={2}
-        >
-          <Typography
-            variant="h6"
+        {/* Cream Header */}
+        <Box sx={{ mb: 3, px: isMobile ? 2 : 4 }}>
+          <Box
             sx={{
-              fontSize: "24px",
-              fontWeight: "bold",
-              backgroundColor: "#D0B8A8",
+              bgcolor: "#D0B8A8",
               px: 2,
               py: 1,
               borderRadius: 1,
-              width: "100%",
+              width: "90%",
               textAlign: "center",
             }}
           >
-            Payroll Summary
-          </Typography>
+            <Typography
+              variant="h6"
+              sx={{ fontSize: "24px", fontWeight: "bold" }}
+            >
+              Payroll Summary
+            </Typography>
+          </Box>
         </Box>
 
+        {/* Table */}
         <Table>
           <TableHead>
             <TableRow>
