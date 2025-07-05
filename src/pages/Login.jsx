@@ -1,19 +1,36 @@
-import React, { useState } from "react";
-import "@fontsource/cinzel";
+// Login.jsx
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Box, Card, Typography, TextField, Button } from "@mui/material";
+
+const SHEET_URL =
+  "https://opensheet.elk.sh/1kipKG3qgAUdKl6nUhYQdcMU_mfx45vdA7Zte_t_0Jvs/Login Credentials";
 
 function Login({ onLoginSuccess }) {
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [credentials, setCredentials] = useState([]);
 
-  const correctLoginId = "admin";
-  const correctPassword = "123";
+  useEffect(() => {
+    axios
+      .get(SHEET_URL)
+      .then((res) => setCredentials(res.data))
+      .catch((err) => console.error("Failed to load login credentials", err));
+  }, []);
 
   const handleLogin = () => {
-    if (loginId === correctLoginId && password === correctPassword) {
+    const user = credentials.find(
+      (u) => u["Employee ID"] === loginId && u.Password === password
+    );
+
+    if (user) {
       setError("");
-      onLoginSuccess({ name: "Admin" }); // Just pass a name, no role
+      onLoginSuccess({
+        id: user["Employee ID"],
+        name: user.Name,
+        role: user.Role,
+      });
     } else {
       setError("Incorrect Login ID or Password");
     }
@@ -26,10 +43,10 @@ function Login({ onLoginSuccess }) {
       alignItems="center"
       height="100vh"
       sx={{
-        backgroundImage: `url("https://i.postimg.cc/cJ9V9Gch/pexels-quang-huy-dao-1662049632-27845253.jpg")`,
+        backgroundImage:
+          'url("https://i.postimg.cc/cJ9V9Gch/pexels-quang-huy-dao-1662049632-27845253.jpg")',
         backgroundSize: "cover",
         backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
       }}
     >
       <Card
@@ -45,11 +62,9 @@ function Login({ onLoginSuccess }) {
         <Typography
           align="center"
           variant="h4"
-          gutterBottom
           sx={{
             fontFamily: "Cinzel, serif",
             fontWeight: "bold",
-            textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)",
           }}
         >
           Login to Krown
@@ -81,14 +96,7 @@ function Login({ onLoginSuccess }) {
         <Button
           fullWidth
           variant="contained"
-          sx={{
-            mt: 2,
-            backgroundColor: "#C5705D",
-            "&:hover": {
-              backgroundColor: "#a15249",
-            },
-            fontWeight: "bold",
-          }}
+          sx={{ mt: 2, backgroundColor: "#C5705D", fontWeight: "bold" }}
           onClick={handleLogin}
         >
           Login
