@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -8,26 +8,36 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  useMediaQuery,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 
 // Dummy images
 const maleDummyImage = "https://avatar.iran.liara.run/public/boy";
 const femaleDummyImage = "https://avatar.iran.liara.run/public/girl";
 
-// For Google Drive links (if used later)
+// Google Drive link cleanup
 const getGoogleDriveDirectLink = (url) => {
   const match = url.match(/[-\w]{25,}/);
   return match ? `https://drive.google.com/uc?export=view&id=${match[0]}` : "";
 };
 
-const EmployeeDetails = ({ employee }) => {
+const EmployeeDetails = ({ employee, activeTab }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [showSalary, setShowSalary] = useState(false);
+
   const rawPhotoUrl = employee["Profile Picture"] || "";
   const cleanPhotoUrl = getGoogleDriveDirectLink(rawPhotoUrl);
 
-  // ✅ Fallback logic for dummy images based on gender
   const profileImageUrl =
     cleanPhotoUrl ||
     (employee.Gender === "Male" ? maleDummyImage : femaleDummyImage);
+
+  // 👇 Reset salary visibility when tab changes
+  useEffect(() => {
+    setShowSalary(false);
+  }, [activeTab]);
 
   return (
     <Card
@@ -36,23 +46,24 @@ const EmployeeDetails = ({ employee }) => {
         borderRadius: 2,
         transition: "box-shadow 0.3s ease-in-out",
         boxShadow: "none",
-        maxWidth: "80%",
-        ml: "left",
+        width: isMobile ? "100%" : "80%",
+        mx: "auto",
         "&:hover": {
           boxShadow: 3,
         },
       }}
     >
       <CardContent>
-        {/* Employee Details Table Header */}
-        <Box textAlign="center" width="94%" mb={3}>
+        {/* Header */}
+        <Box textAlign="center" width="100%" mb={3}>
           <Box
             sx={{
               bgcolor: "#D0B8A8",
               px: 2,
               py: 1,
               borderRadius: 1,
-              width: "100%",
+              width: "90%",
+              mx: "auto",
             }}
           >
             <Typography
@@ -65,17 +76,19 @@ const EmployeeDetails = ({ employee }) => {
           </Box>
         </Box>
 
+        {/* Content */}
         <Box
           sx={{
             display: "flex",
+            flexDirection: isMobile ? "column-reverse" : "row",
             justifyContent: "space-between",
-            alignItems: "flex-start",
+            alignItems: isMobile ? "center" : "flex-start",
             gap: 4,
-            flexWrap: "wrap",
+            px: isMobile ? 0 : 4,
           }}
         >
           {/* Table Section */}
-          <Box textAlign="left" width="50%">
+          <Box sx={{ width: isMobile ? "100%" : "50%" }}>
             <Table size="small">
               <TableBody>
                 {[
@@ -85,7 +98,22 @@ const EmployeeDetails = ({ employee }) => {
                   ["Designation", employee.Designation],
                   ["Gender", employee.Gender],
                   ["Joining Date", employee.DOJ],
-                  ["Salary", `₹${employee["Salary/Month"]}`],
+                  [
+                    "Salary",
+                    <Box
+                      key="salary"
+                      onClick={() => setShowSalary((prev) => !prev)}
+                      sx={{
+                        fontFamily: "monospace",
+                        filter: showSalary ? "none" : "blur(6px)",
+                        transition: "0.3s",
+                        cursor: "pointer",
+                        userSelect: "none",
+                      }}
+                    >
+                      ₹{employee["Salary/Month"]}
+                    </Box>,
+                  ],
                   ["Company", employee["Company Name"]],
                 ].map(([label, value]) => (
                   <TableRow
@@ -120,13 +148,13 @@ const EmployeeDetails = ({ employee }) => {
                 employee.Gender === "Male" ? maleDummyImage : femaleDummyImage;
             }}
             sx={{
-              mr: 7,
-              mt: 4,
               width: 200,
               height: 200,
               borderRadius: "50%",
               objectFit: "cover",
               boxShadow: 10,
+              mt: isMobile ? 2 : 4,
+              mr: isMobile ? 0 : 7,
             }}
           />
         </Box>
