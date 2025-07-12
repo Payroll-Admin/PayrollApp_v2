@@ -22,7 +22,6 @@ import DownloadIcon from "@mui/icons-material/Download";
 const PayrollSummary = ({ payroll }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
   const [openDialog, setOpenDialog] = React.useState(false);
 
   if (!payroll) {
@@ -43,7 +42,7 @@ const PayrollSummary = ({ payroll }) => {
   ];
 
   const handlePayslipDownload = () => {
-    // Placeholder for actual logic to generate/download payslip PDF
+    // Placeholder for real download logic
     alert("Payslip download initiated.");
     setOpenDialog(false);
   };
@@ -60,47 +59,59 @@ const PayrollSummary = ({ payroll }) => {
       }}
     >
       <CardContent>
-        {/* Title Row with Button */}
+        {/* Cream Header with Center Title and Right Button */}
         <Box
           sx={{
             mb: 3,
             px: isMobile ? 2 : 4,
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <Box
             sx={{
               bgcolor: "#D0B8A8",
               px: 3,
-              py: 1,
+              py: 1.5,
               borderRadius: 1,
-              mx: "auto",
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
             }}
           >
-            <Typography variant="h6" sx={{ fontSize: "24px", fontWeight: "bold" }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: "24px",
+                fontWeight: "bold",
+                flexGrow: 1,
+                textAlign: "center",
+              }}
+            >
               Payroll Summary
             </Typography>
-          </Box>
 
-          <Button
-            variant="outlined"
-            startIcon={<DownloadIcon />}
-            onClick={() => setOpenDialog(true)}
-            sx={{
-              color: "#5C3D2E",
-              borderColor: "#5C3D2E",
-              textTransform: "none",
-              ml: 2,
-              "&:hover": {
-                backgroundColor: "#f3e9e4",
-                borderColor: "#5C3D2E",
-              },
-            }}
-          >
-            Payslip
-          </Button>
+            <Button
+              variant="text"
+              startIcon={<DownloadIcon />}
+              onClick={() => setOpenDialog(true)}
+              sx={{
+                color: "#5C3D2E",
+                textTransform: "none",
+                border: "1px solid transparent",
+                ml: "auto",
+                mr: 1,
+                "&:hover": {
+                  backgroundColor: "transparent",
+                  textDecoration: "underline",
+                },
+              }}
+            >
+              Payslip
+            </Button>
+          </Box>
         </Box>
 
         {/* Table */}
@@ -146,7 +157,7 @@ const PayrollSummary = ({ payroll }) => {
           </TableBody>
         </Table>
 
-        {/* Dialog for Confirmation */}
+        {/* Confirmation Dialog */}
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
           <DialogTitle>Download Payslip</DialogTitle>
           <DialogContent>
