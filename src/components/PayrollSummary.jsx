@@ -21,9 +21,6 @@ import {
 import { useTheme } from "@mui/material/styles";
 import DownloadIcon from "@mui/icons-material/Download";
 
-// Ensure autoTable is registered (defensive fallback)
-autoTable(jsPDF);
-
 const PayrollSummary = ({ payroll }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
