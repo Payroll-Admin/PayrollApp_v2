@@ -1,6 +1,6 @@
 import React from "react";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import {
   Card,
   CardContent,
@@ -50,13 +50,14 @@ const PayrollSummary = ({ payroll }) => {
     doc.setFontSize(18);
     doc.text("Monthly Payslip", 105, 20, { align: "center" });
 
-    // Timestamp
+    // Date
     doc.setFontSize(12);
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
 
-    // Table data
+    // Table rows
     const tableRows = rows.map(([label, value]) => [label, String(value)]);
 
+    // AutoTable
     doc.autoTable({
       startY: 40,
       head: [["Metric", "Value"]],
@@ -187,7 +188,7 @@ const PayrollSummary = ({ payroll }) => {
           </TableBody>
         </Table>
 
-        {/* Dialog */}
+        {/* Confirmation Dialog */}
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
           <DialogTitle>Download Payslip</DialogTitle>
           <DialogContent>
