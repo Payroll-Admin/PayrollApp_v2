@@ -5,18 +5,20 @@
   "keywords": [],
   "main": "src/index.tsx",
   "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-scripts": "^5.0.0",
-    "@mui/material": "7.1.0",
-    "@mui/icons-material": "7.1.0",
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.0",
-    "axios": "1.9.0",
-    "recharts": "2.15.3",
     "@fontsource/cinzel": "5.2.5",
+    "@mui/icons-material": "7.1.0",
+    "@mui/material": "7.1.0",
+    "axios": "1.9.0",
+    "dayjs": "1.11.13",
+    "g": "^2.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-router-dom": "7.6.1",
-    "dayjs": "1.11.13"
+    "react-scripts": "^5.0.0",
+    "recharts": "2.15.3",
+    "vercel": "^44.4.3"
   },
   "devDependencies": {
     "@types/react": "19.0.0",
