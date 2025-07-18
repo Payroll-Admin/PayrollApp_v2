@@ -1,6 +1,5 @@
 import React from "react";
-import jsPDF from "jspdf";
-window.jsPDF = jsPDF;
+import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import {
   Card,
